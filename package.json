@@ -1,0 +1,17 @@
+{
+  "name": "tamyan-clinic-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tamyan Clinic term project demo: online appointment booking on PostgreSQL (PGlite)",
+  "engines": {
+    "node": ">=24.7"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
+}

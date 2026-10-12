@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+const base='http://127.0.0.1:4173';
+async function call(path,body,cookie){const r=await fetch(base+path,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};}
+const patient=(await call('/api/login',{username:'patient1',password:'Demo2026!'})).cookie;
+const staff=(await call('/api/login',{username:'staff1',password:'Demo2026!'})).cookie;
+const state=(await call('/api/state',null,patient)).data;
+assert(state.appointments.some(a=>a.date===state.defaultDate&&a.time==='09:00:00'));
+const before=(await call('/api/database',null,staff)).data.tables;
+assert.equal(before.appointment.length,2);assert.equal(before.activity_log.length,2);
+const rejected=await call('/api/book',{doctorId:1,date:state.defaultDate,time:'10:00'},patient);
+assert.equal(rejected.status,409);assert.match(rejected.data.error,/ถูกจองแล้ว/);assert.equal(rejected.data.rolledBack,true);assert.equal(rejected.data.constraint,'uq_doctor_active_slot');
+const after=(await call('/api/database',null,staff)).data.tables;
+assert.deepEqual(after.appointment,before.appointment);assert.deepEqual(after.activity_log,before.activity_log);
+const root=new URL('evidence/',import.meta.url);
+const ui=JSON.parse(await fs.readFile(new URL('screenshots/ui_click_evidence.json',root),'utf8'));
+assert.equal(ui.booking.response.status,201);assert.equal(ui.rejection.response.status,409);assert.equal(ui.rejection.response.body.constraint,'uq_doctor_active_slot');assert.equal(ui.rejection.response.body.rolledBack,true);assert.match(ui.rejection.message,/ฐานข้อมูลปฏิเสธ: uq_doctor_active_slot/);assert.deepEqual(ui.databaseAfterRejection,ui.databaseAfterBooking);
+const file=new URL('verification.json',root);const report=JSON.parse(await fs.readFile(file,'utf8'));
+report.uiDemo={checkedAt:new Date().toISOString(),date:state.defaultDate,appointmentId:state.appointments.find(a=>a.time==='09:00:00').appointment_id,duplicateStatus:rejected.status,message:rejected.data.error,rolledBack:true,before:{appointment:2,activity_log:2},after:{appointment:2,activity_log:2},constraint:rejected.data.constraint,bothTablesUnchanged:true,uiRejection:'UI click on occupied 10:00 sent POST /api/book; PostgreSQL rejected it with uq_doctor_active_slot (HTTP 409, rolled back); appointment and activity_log unchanged.',uiClick:{bookingStatus:ui.booking.response.status,rejectionStatus:ui.rejection.response.status,rejectionBody:ui.rejection.response.body,messageOnScreen:ui.rejection.message,databaseAfterBooking:ui.databaseAfterBooking,databaseAfterRejection:ui.databaseAfterRejection},screenshots:['01_before','02_booking_success','03_database_after','04_booking_rejected','04b_database_after_rejected','05_final_result'].map(n=>'evidence/screenshots/'+n+'.png')};
+await fs.writeFile(file,JSON.stringify(report,null,2));
+console.log(JSON.stringify(report.uiDemo,null,2));

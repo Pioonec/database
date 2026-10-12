@@ -1,0 +1,64 @@
+{
+  "startedAt": "2026-10-11T11:52:19.828Z",
+  "databaseBefore": [
+    "appointment · 1 แถว",
+    "activity_log · 1 แถว",
+    "patient · 2 แถว",
+    "doctor · 1 แถว"
+  ],
+  "before": {
+    "slot0900": {
+      "time": "09:00",
+      "busy": false,
+      "label": "ว่าง"
+    },
+    "slot1000": {
+      "time": "10:00",
+      "busy": true,
+      "label": "ถูกจองแล้ว"
+    }
+  },
+  "booking": {
+    "response": {
+      "status": 201,
+      "body": {
+        "appointment": {
+          "appointment_id": 2,
+          "date": "2026-10-18",
+          "time": "09:00:00",
+          "status": "scheduled"
+        }
+      }
+    },
+    "message": "บันทึกนัดหมายสำเร็จ"
+  },
+  "databaseAfterBooking": [
+    "appointment · 2 แถว",
+    "activity_log · 2 แถว",
+    "patient · 2 แถว",
+    "doctor · 1 แถว"
+  ],
+  "rejectedSelection": "เลือก หมอ A — เวชปฏิบัติทั่วไป · 2026-10-18 · 10:00 (แสดงว่าถูกจองแล้ว — กดยืนยันเพื่อส่งให้ฐานข้อมูลตรวจ)",
+  "rejection": {
+    "response": {
+      "status": 409,
+      "body": {
+        "error": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+        "rolledBack": true,
+        "constraint": "uq_doctor_active_slot"
+      }
+    },
+    "message": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น (ฐานข้อมูลปฏิเสธ: uq_doctor_active_slot — ยกเลิกรายการทั้งหมด) — ไม่มีการบันทึกรายการนี้"
+  },
+  "databaseAfterRejection": [
+    "appointment · 2 แถว",
+    "activity_log · 2 แถว",
+    "patient · 2 แถว",
+    "doctor · 1 แถว"
+  ],
+  "final": {
+    "appointments": "รหัสนัด\tคนไข้\tแพทย์\tวันที่\tเวลา\tสถานะ\n2\tคนไข้สาธิต ก\tหมอ A\t2026-10-18\t09:00\tscheduled",
+    "schedule": "รหัสนัด\tเวลา\tสถานะ\n2\t09:00\tscheduled\n1\t10:00\tscheduled"
+  },
+  "finishedAt": "2026-10-11T11:52:24.416Z"
+}

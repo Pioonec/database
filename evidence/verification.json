@@ -1,0 +1,243 @@
+{
+  "testedAt": "2026-10-11T11:52:01.822Z",
+  "passed": 18,
+  "failed": 0,
+  "demoDate": "2026-10-18",
+  "testDate": "2027-01-26",
+  "schema": {
+    "ddlHash": "9ab294700d59390265022b116bc8e083d6ed92ac6e484763f1b4c2abb693f988",
+    "constraints": [
+      {
+        "conname": "ck_queue_received_day",
+        "definition": "CHECK ((queue_date = ((time_received AT TIME ZONE 'Asia/Bangkok'::text))::date))"
+      },
+      {
+        "conname": "fk_queue_appointment_patient",
+        "definition": "FOREIGN KEY (appointment_id, patient_id) REFERENCES clinic17.appointment(appointment_id, patient_id) ON UPDATE RESTRICT ON DELETE RESTRICT"
+      }
+    ],
+    "paymentColumns": [
+      "payment_id",
+      "record_id",
+      "patient_id",
+      "staff_id",
+      "bank_id",
+      "payment_method",
+      "payment_date",
+      "amount",
+      "medical_fee",
+      "lab_fee",
+      "received_amount",
+      "status"
+    ]
+  },
+  "results": [
+    "booking requires login",
+    "wrong password rejected",
+    "patient cannot inspect database",
+    "patient cannot inspect schema",
+    "server loads latest canonical DDL",
+    "ck_queue_received_day exists",
+    "fk_queue_appointment_patient uses composite key",
+    "payment.change_amount is absent",
+    "demo starts with patient2 at 10:00 and 09:00 free",
+    "patient1 cannot book seeded 10:00; both tables unchanged",
+    "patient2 reserves 10:00 on isolated test date",
+    "booking commits appointment and activity_log",
+    "patient1 booking occupied 10:00 is rejected even after 09:00 booking",
+    "same doctor 09:00 slot rejected for patient2",
+    "one online appointment per patient per day",
+    "24-hour advance booking rule",
+    "final result and doctor daily schedule include new appointment",
+    "logout invalidates session"
+  ],
+  "cases": [
+    {
+      "name": "booking requires login",
+      "passed": true
+    },
+    {
+      "name": "wrong password rejected",
+      "passed": true
+    },
+    {
+      "name": "patient cannot inspect database",
+      "passed": true
+    },
+    {
+      "name": "patient cannot inspect schema",
+      "passed": true
+    },
+    {
+      "name": "server loads latest canonical DDL",
+      "passed": true,
+      "ddlHash": "9ab294700d59390265022b116bc8e083d6ed92ac6e484763f1b4c2abb693f988"
+    },
+    {
+      "name": "ck_queue_received_day exists",
+      "passed": true
+    },
+    {
+      "name": "fk_queue_appointment_patient uses composite key",
+      "passed": true
+    },
+    {
+      "name": "payment.change_amount is absent",
+      "passed": true
+    },
+    {
+      "name": "demo starts with patient2 at 10:00 and 09:00 free",
+      "passed": true,
+      "demoDate": "2026-10-18"
+    },
+    {
+      "name": "patient1 cannot book seeded 10:00; both tables unchanged",
+      "passed": true,
+      "status": 409,
+      "message": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+      "constraint": "uq_doctor_active_slot",
+      "before": {
+        "appointment": 1,
+        "activity_log": 1
+      },
+      "after": {
+        "appointment": 1,
+        "activity_log": 1
+      }
+    },
+    {
+      "name": "patient2 reserves 10:00 on isolated test date",
+      "passed": true
+    },
+    {
+      "name": "booking commits appointment and activity_log",
+      "passed": true,
+      "appointmentId": 4,
+      "before": {
+        "appointment": 2,
+        "activity_log": 2
+      },
+      "after": {
+        "appointment": 3,
+        "activity_log": 3
+      }
+    },
+    {
+      "name": "patient1 booking occupied 10:00 is rejected even after 09:00 booking",
+      "passed": true,
+      "status": 409,
+      "message": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+      "constraint": "uq_doctor_active_slot",
+      "before": {
+        "appointment": 3,
+        "activity_log": 3
+      },
+      "after": {
+        "appointment": 3,
+        "activity_log": 3
+      }
+    },
+    {
+      "name": "same doctor 09:00 slot rejected for patient2",
+      "passed": true,
+      "status": 409,
+      "message": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+      "constraint": "uq_doctor_active_slot",
+      "before": {
+        "appointment": 3,
+        "activity_log": 3
+      },
+      "after": {
+        "appointment": 3,
+        "activity_log": 3
+      }
+    },
+    {
+      "name": "one online appointment per patient per day",
+      "passed": true,
+      "status": 409,
+      "message": "คุณมีนัดออนไลน์ในวันที่เลือกแล้ว จองได้ไม่เกินหนึ่งนัดต่อวัน",
+      "constraint": "uq_patient_online_day",
+      "before": {
+        "appointment": 3,
+        "activity_log": 3
+      },
+      "after": {
+        "appointment": 3,
+        "activity_log": 3
+      }
+    },
+    {
+      "name": "24-hour advance booking rule",
+      "passed": true,
+      "status": 409,
+      "message": "ต้องจองล่วงหน้าอย่างน้อย 24 ชั่วโมง",
+      "constraint": "trg_appointment_rules",
+      "before": {
+        "appointment": 3,
+        "activity_log": 3
+      },
+      "after": {
+        "appointment": 3,
+        "activity_log": 3
+      }
+    },
+    {
+      "name": "final result and doctor daily schedule include new appointment",
+      "passed": true
+    },
+    {
+      "name": "logout invalidates session",
+      "passed": true
+    }
+  ],
+  "uiDemo": {
+    "checkedAt": "2026-10-11T11:52:25.448Z",
+    "date": "2026-10-18",
+    "appointmentId": 2,
+    "duplicateStatus": 409,
+    "message": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+    "rolledBack": true,
+    "before": {
+      "appointment": 2,
+      "activity_log": 2
+    },
+    "after": {
+      "appointment": 2,
+      "activity_log": 2
+    },
+    "constraint": "uq_doctor_active_slot",
+    "bothTablesUnchanged": true,
+    "uiRejection": "UI click on occupied 10:00 sent POST /api/book; PostgreSQL rejected it with uq_doctor_active_slot (HTTP 409, rolled back); appointment and activity_log unchanged.",
+    "uiClick": {
+      "bookingStatus": 201,
+      "rejectionStatus": 409,
+      "rejectionBody": {
+        "error": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น",
+        "rolledBack": true,
+        "constraint": "uq_doctor_active_slot"
+      },
+      "messageOnScreen": "เวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น (ฐานข้อมูลปฏิเสธ: uq_doctor_active_slot — ยกเลิกรายการทั้งหมด) — ไม่มีการบันทึกรายการนี้",
+      "databaseAfterBooking": [
+        "appointment · 2 แถว",
+        "activity_log · 2 แถว",
+        "patient · 2 แถว",
+        "doctor · 1 แถว"
+      ],
+      "databaseAfterRejection": [
+        "appointment · 2 แถว",
+        "activity_log · 2 แถว",
+        "patient · 2 แถว",
+        "doctor · 1 แถว"
+      ]
+    },
+    "screenshots": [
+      "demo_step4/01_before.png",
+      "demo_step4/02_booking_success.png",
+      "demo_step4/03_database_after.png",
+      "demo_step4/04_booking_rejected.png",
+      "demo_step4/04b_database_after_rejected.png",
+      "demo_step4/05_final_result.png"
+    ]
+  }
+}
